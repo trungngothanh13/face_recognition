@@ -1,0 +1,34 @@
+face_recognition_system/
+│
+├── notebooks/
+│   └── 1_system_test.ipynb           # Initial system test notebook
+│
+├── src/
+│   ├── __init__.py                   # Make src a proper package
+│   │
+│   ├── data/
+│   │   ├── __init__.py
+│   │   ├── database.py               # MongoDB connection functions
+│   │   └── video_stream.py           # Video capture class
+│   │
+│   ├── processing/
+│   │   ├── __init__.py
+│   │   ├── motion_detector.py        # Motion detection implementation
+│   │   └── face_processor.py         # To be implemented next
+│   │
+│   ├── analytics/
+│   │   ├── __init__.py
+│   │   └── metrics.py                # To be implemented
+│   │
+│   └── utils/
+│       ├── __init__.py
+│       └── config_loader.py          # Configuration utilities
+│
+├── config/
+│   └── system_config.json            # System configuration file
+│
+├── tests/                            # Test modules (to be implemented)
+│
+├── requirements.txt                  # Generated from pip freeze
+│
+└── README.md                         # Project documentation
