@@ -70,7 +70,7 @@ class MotionDetector:
         self.prev_frame = gray
         
         # Draw motion status text
-        status = "Motion Detected" if self.motion_detected else "No Motion"
+        status = "" if self.motion_detected else ""
         cv2.putText(output_frame, status, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
         
         return self.motion_detected, output_frame
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     
     # Import video stream class
-    from data.video_stream import VideoStream
+    from database.video_stream import VideoStream
     
     # Create video stream
     stream = VideoStream(0).start()

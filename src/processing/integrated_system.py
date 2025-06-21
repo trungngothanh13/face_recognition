@@ -121,9 +121,9 @@ class IntegratedSystem:
     
     def initialize(self):
         """Initialize all system components"""
-        from ..data.video_stream import VideoStream
+        from ..database.video_stream import VideoStream
         from ..processing.motion_detector import MotionDetector
-        from ..data.face_database import FaceDatabase
+        from ..database.face_database import FaceDatabase
         from ..utils.config_loader import load_config
         
         print("🔧 Initializing system components...")
@@ -289,7 +289,7 @@ def quick_integrated_system(duration=30):
 
 def quick_system_status():
     """Quick function to check system status"""
-    from ..data.face_database import FaceDatabase
+    from ..database.face_database import FaceDatabase
     
     face_db = FaceDatabase()
     try:

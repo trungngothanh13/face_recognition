@@ -1,7 +1,13 @@
-# src/data/video_stream.py
+# src/processing/video_stream.py
+"""
+Video stream handling for camera input
+Simplified and extracted from original video_stream.py
+"""
 import cv2
 
 class VideoStream:
+    """Video stream handler for camera input"""
+    
     def __init__(self, source=0):
         """
         Initialize the video stream
@@ -13,9 +19,7 @@ class VideoStream:
         self.cap = None
     
     def start(self):
-        """
-        Start the video stream
-        """
+        """Start the video stream"""
         self.cap = cv2.VideoCapture(self.source)
         if not self.cap.isOpened():
             raise ValueError(f"Unable to open video source {self.source}")
@@ -41,36 +45,19 @@ class VideoStream:
         return self.cap.read()
     
     def stop(self):
-        """
-        Release the video stream
-        """
+        """Release the video stream"""
         if self.cap is not None:
             self.cap.release()
         self.cap = None
-
-# Test code
-if __name__ == "__main__":
-    # Create a video stream using the default webcam
-    stream = VideoStream().start()
     
-    try:
-        print(f"Stream started: {stream.width}x{stream.height} @ {stream.fps}fps")
+    def get_properties(self):
+        """Get video stream properties"""
+        if self.cap is None:
+            return None
         
-        # Display the stream for 10 seconds
-        while True:
-            ret, frame = stream.read()
-            if not ret:
-                break
-            
-            # Display the frame
-            cv2.imshow('Video Stream Test', frame)
-            
-            # Exit on 'q' press
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-    
-    finally:
-        # Clean up
-        stream.stop()
-        cv2.destroyAllWindows()
-        print("Stream stopped")
+        return {
+            'width': self.width,
+            'height': self.height,
+            'fps': self.fps,
+            'source': self.source
+        }

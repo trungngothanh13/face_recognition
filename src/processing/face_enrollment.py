@@ -290,8 +290,8 @@ def quick_enroll(person_name, num_samples=5):
     Returns:
         bool: Success status
     """
-    from ..data.video_stream import VideoStream
-    from ..data.face_database import FaceDatabase
+    from ..database.video_stream import VideoStream
+    from ..database.face_database import FaceDatabase
     
     # Create components
     face_db = FaceDatabase()
@@ -317,8 +317,8 @@ def quick_enroll(person_name, num_samples=5):
 
 def quick_test():
     """Quick recognition test function for notebook use"""
-    from ..data.video_stream import VideoStream
-    from ..data.face_database import FaceDatabase
+    from ..database.video_stream import VideoStream
+    from ..database.face_database import FaceDatabase
     
     # Create components
     face_db = FaceDatabase()
