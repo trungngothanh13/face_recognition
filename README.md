@@ -26,7 +26,7 @@ python -m venv face_recognition_env
 face_recognition_env\Scripts\activate
 
 # Install core dependencies
-pip install opencv-python pymongo numpy
+pip install -r requirements.txt
 
 # Install face recognition library
 pip install face-recognition
