@@ -22,7 +22,7 @@ class MainWindow:
     def __init__(self, root):
         self.root = root
         self.root.title("Face Recognition Attendance System")
-        self.root.geometry("1400x800")
+        self.root.geometry("1700x850")
         
         # Initialize databases
         self.emp_db = EmployeeDatabase()
