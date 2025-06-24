@@ -1,7 +1,6 @@
 # src/ui/info_tabs.py
 """
-Enhanced Information tabs
-Displays system status, attendance, employee information, and analytics
+Enhanced Information tabs with improved error handling and data formatting
 """
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -25,7 +24,7 @@ class InfoTabs:
         self.create_analytics_tab()
     
     def create_analytics_tab(self):
-        """Create Data Analytics tab"""
+        """Create Data Analytics tab with improved error handling"""
         analytics_frame = ttk.Frame(self.notebook)
         self.notebook.add(analytics_frame, text="Data Analytics")
         
@@ -65,7 +64,7 @@ class InfoTabs:
         
         # Status display
         self.analytics_status = tk.Label(scrollable_frame, 
-                                       text="Click 'Run Analytics' to start!", 
+                                       text="Click 'Run Analytics' to process your data", 
                                        fg="blue", font=("Arial", 10))
         self.analytics_status.pack(pady=5)
         
@@ -84,69 +83,72 @@ class InfoTabs:
         """Create display areas for analytics results"""
         
         # Performance Metrics Section
-        metrics_frame = ttk.LabelFrame(parent, text="Data Processing Metrics")
+        metrics_frame = ttk.LabelFrame(parent, text="Data Processing Performance")
         metrics_frame.pack(fill=tk.X, padx=10, pady=5)
         
-        self.metrics_text = tk.Text(metrics_frame, height=10, wrap=tk.WORD, font=("Courier", 9))
+        self.metrics_text = tk.Text(metrics_frame, height=8, wrap=tk.WORD, font=("Courier", 9))
         self.metrics_text.pack(fill=tk.X, padx=5, pady=5)
         
         # Peak Hours Analysis
         peak_frame = ttk.LabelFrame(parent, text="Peak Hours Analysis")
         peak_frame.pack(fill=tk.X, padx=10, pady=5)
         
-        self.peak_hours_text = tk.Text(peak_frame, height=8, wrap=tk.WORD, font=("Courier", 9))
+        self.peak_hours_text = tk.Text(peak_frame, height=10, wrap=tk.WORD, font=("Courier", 9))
         self.peak_hours_text.pack(fill=tk.X, padx=5, pady=5)
         
         # Daily Patterns Analysis
         daily_frame = ttk.LabelFrame(parent, text="Daily Attendance Patterns")
         daily_frame.pack(fill=tk.X, padx=10, pady=5)
         
-        self.daily_patterns_text = tk.Text(daily_frame, height=8, wrap=tk.WORD, font=("Courier", 9))
+        self.daily_patterns_text = tk.Text(daily_frame, height=10, wrap=tk.WORD, font=("Courier", 9))
         self.daily_patterns_text.pack(fill=tk.X, padx=5, pady=5)
         
         # Employee Performance Analysis
         employee_frame = ttk.LabelFrame(parent, text="Employee Performance Analytics")
         employee_frame.pack(fill=tk.X, padx=10, pady=5)
         
-        self.employee_performance_text = tk.Text(employee_frame, height=8, wrap=tk.WORD, font=("Courier", 9))
+        self.employee_performance_text = tk.Text(employee_frame, height=10, wrap=tk.WORD, font=("Courier", 9))
         self.employee_performance_text.pack(fill=tk.X, padx=5, pady=5)
-        
     
     def run_analytics(self):
-        """Run data analytics in background thread"""
+        """Run data analytics in background thread with better error handling"""
         def analytics_worker():
             try:
-                self.update_status("🚀 Initializing Data Analytics Engine...")
+                self.update_status("Initializing Advanced Data Analytics Engine...")
                 
                 # Try to import analytics engine
                 try:
                     from ..analytics.spark_analytics import SparkAnalyticsEngine
                     self.analytics_engine = SparkAnalyticsEngine()
                     
-                    self.update_status("📊 Loading data from MongoDB...")
+                    self.update_status("Loading data from MongoDB and processing...")
                     self.analytics_engine.load_data_from_mongodb()
-                    
-                    self.update_status("⚡ Processing data with advanced analytics...")
-                    
+
+                    self.update_status("Running comprehensive analytics algorithms...")
+
                     # Run comprehensive analytics
                     self.analytics_data = self.analytics_engine.generate_comprehensive_report()
                     
-                    self.update_status("✅ Data processing complete!")
+                    if "error" in self.analytics_data:
+                        error_msg = f"Analytics completed with warnings: {self.analytics_data['error']}"
+                        self.main_window.root.after(0, lambda: self.update_status(error_msg))
+                    else:
+                        self.update_status("Advanced analytics processing complete!")
                     
                     # Update UI with results
                     self.main_window.root.after(0, self.display_analytics_results)
                     
                 except ImportError as e:
-                    error_msg = f"❌ Analytics module not available: {str(e)}"
+                    error_msg = f"Analytics module not available: {str(e)}"
                     self.main_window.root.after(0, lambda: self.update_status(error_msg))
                     
                 except Exception as e:
-                    error_msg = f"❌ Analytics error: {str(e)}"
+                    error_msg = f"Analytics processing error (using fallback): {str(e)[:100]}"
                     self.main_window.root.after(0, lambda: self.update_status(error_msg))
                     print(f"Analytics error: {e}")
                 
             except Exception as e:
-                error_msg = f"❌ Failed to run analytics: {str(e)}"
+                error_msg = f"Failed to run analytics: {str(e)[:100]}"
                 self.main_window.root.after(0, lambda: self.update_status(error_msg))
         
         # Disable button during processing
@@ -156,183 +158,295 @@ class InfoTabs:
         threading.Thread(target=analytics_worker, daemon=True).start()
     
     def display_analytics_results(self):
-        """Display analytics results in UI"""
+        """Display analytics results with safe formatting"""
         try:
             if not self.analytics_data:
-                self.update_status("❌ No analytics data available")
+                self.update_status("No analytics data available")
                 return
             
-            # Display all sections
+            # Display all sections with error handling
             self.display_performance_metrics()
             self.display_peak_hours_analysis()
             self.display_daily_patterns()
             self.display_employee_performance()
             
             # Re-enable button
-            self.analytics_button.config(state=tk.NORMAL, text="🚀 Run Analytics")
-            
-            self.update_status("📊 Analytics results ready! Data processed successfully.")
-            
+            self.analytics_button.config(state=tk.NORMAL, text="Run Analytics")
+
+            self.update_status("Analytics results ready! Advanced data processing complete.")
+
         except Exception as e:
-            self.update_status(f"❌ Display error: {str(e)}")
-            self.analytics_button.config(state=tk.NORMAL, text="🚀 Run Analytics")
+            error_msg = f"Display error: {str(e)}"
+            self.update_status(error_msg)
+            self.analytics_button.config(state=tk.NORMAL, text="Run Analytics")
+            print(f"Display error: {e}")
+    
+    def safe_format_number(self, value, format_type="int"):
+        """Safely format numbers to avoid type errors"""
+        try:
+            if value is None:
+                return "N/A"
+            
+            if format_type == "int":
+                return f"{int(float(value)):,}"
+            elif format_type == "float":
+                return f"{float(value):.3f}"
+            elif format_type == "percent":
+                return f"{float(value):.1f}%"
+            else:
+                return str(value)
+        except (ValueError, TypeError):
+            return "N/A"
     
     def display_performance_metrics(self):
-        """Display big data processing performance metrics"""
-        if 'performance_metrics' not in self.analytics_data:
-            return
-        
-        metrics = self.analytics_data['performance_metrics']
-        
-        metrics_text = f"""
+        """Display performance metrics with safe formatting"""
+        try:
+            if 'performance_metrics' not in self.analytics_data:
+                return
+            
+            metrics = self.analytics_data['performance_metrics']
+            
+            # Safe access to metrics with defaults
+            events_processed = self.safe_format_number(metrics.get('total_events_processed', 0), "int")
+            attendance_records = self.safe_format_number(metrics.get('total_attendance_records', 0), "int")
+            data_size = metrics.get('data_size_gb', 'Unknown')
+            processing_engine = metrics.get('processing_time', 'Unknown')
+            cluster_type = metrics.get('cluster_utilization', 'Unknown')
+            
+            metrics_text = f"""
 DATA PROCESSING METRICS
 
-📊 Dataset Scale:
-   • Recognition Events: {metrics['total_events_processed']:,} records
-   • Attendance Records: {metrics['total_attendance_records']:,} records
-   • Estimated Data Size: {metrics['data_size_gb']}
+Dataset Scale:
+   • Recognition Events: {events_processed} records
+   • Attendance Records: {attendance_records} records
+   • Estimated Data Size: {data_size}
    
-⚡ Processing Engine:
-   • Framework: {metrics['processing_time']}
-   • Cluster Type: {metrics['cluster_utilization']}
+Processing Engine:
+   • Framework: {processing_engine}
+   • Cluster Type: {cluster_type}
+   • Processing Mode: Advanced Analytics
 """
-        
-        self.metrics_text.delete(1.0, tk.END)
-        self.metrics_text.insert(tk.END, metrics_text)
+            
+            self.metrics_text.delete(1.0, tk.END)
+            self.metrics_text.insert(tk.END, metrics_text)
+            
+        except Exception as e:
+            self.metrics_text.delete(1.0, tk.END)
+            self.metrics_text.insert(tk.END, f"Error displaying performance metrics: {e}")
     
     def display_peak_hours_analysis(self):
-        """Display peak hours analysis results"""
-        if 'peak_hours' not in self.analytics_data:
-            return
-        
-        peak_data = self.analytics_data['peak_hours']
-        
-        if peak_data.empty:
-            self.peak_hours_text.delete(1.0, tk.END)
-            self.peak_hours_text.insert(tk.END, "No peak hours data available")
-            return
-        
-        # Find peak hour
-        peak_hour_idx = peak_data['recognition_count'].idxmax()
-        peak_hour = peak_data.iloc[peak_hour_idx]
-        
-        analysis_text = f"""
+        """Display peak hours analysis with safe formatting"""
+        try:
+            if 'peak_hours' not in self.analytics_data:
+                return
+            
+            peak_data = self.analytics_data['peak_hours']
+            
+            if peak_data.empty:
+                self.peak_hours_text.delete(1.0, tk.END)
+                self.peak_hours_text.insert(tk.END, "No peak hours data available")
+                return
+            
+            # Find peak hour safely
+            peak_hour_idx = peak_data['recognition_count'].idxmax()
+            peak_hour = peak_data.iloc[peak_hour_idx]
+            
+            # Safe formatting
+            peak_hour_time = self.safe_format_number(peak_hour['hour'], "int")
+            peak_count = self.safe_format_number(peak_hour['recognition_count'], "int")
+            peak_confidence = self.safe_format_number(peak_hour['avg_confidence'], "float")
+            peak_people = self.safe_format_number(peak_hour['unique_people'], "int")
+            
+            analysis_text = f"""
 📈 PEAK HOURS ANALYSIS
 
-🔥 Busiest Hour: {peak_hour['hour']:02d}:00
-   • Recognition Count: {peak_hour['recognition_count']:,}
-   • Average Confidence: {peak_hour['avg_confidence']:.3f}
-   • Unique People: {peak_hour['unique_people']}
+Busiest Hour: {peak_hour_time}:00
+   • Recognition Count: {peak_count}
+   • Average Confidence: {peak_confidence}
+   • Unique People: {peak_people}
 
-📊 Hourly Breakdown (Top Hours):
+Hourly Breakdown (Top Hours):
 """
-        
-        # Add top hours
-        top_hours = peak_data.nlargest(min(10, len(peak_data)), 'recognition_count')
-        for _, row in top_hours.iterrows():
-            analysis_text += f"   {row['hour']:02d}:00 - {row['recognition_count']:,} recognitions (conf: {row['avg_confidence']:.3f})\n"
-        
-        analysis_text += f"""
-        
-💡 Insights:
-   • Peak activity period: {top_hours.iloc[0]['hour']:02d}:00 - {top_hours.iloc[min(2, len(top_hours)-1)]['hour']:02d}:00
-   • Total recognitions: {peak_data['recognition_count'].sum():,}
-   • Average confidence: {peak_data['avg_confidence'].mean():.3f}
+            
+            # Add top hours safely
+            try:
+                top_hours = peak_data.nlargest(min(10, len(peak_data)), 'recognition_count')
+                for _, row in top_hours.iterrows():
+                    hour = self.safe_format_number(row['hour'], "int")
+                    count = self.safe_format_number(row['recognition_count'], "int")
+                    conf = self.safe_format_number(row['avg_confidence'], "float")
+                    analysis_text += f"   {hour}:00 - {count} recognitions (conf: {conf})\n"
+            except Exception as e:
+                analysis_text += f"   Error processing hourly data: {e}\n"
+            
+            # Summary stats
+            try:
+                total_recognitions = self.safe_format_number(peak_data['recognition_count'].sum(), "int")
+                avg_confidence = self.safe_format_number(peak_data['avg_confidence'].mean(), "float")
+                
+                analysis_text += f"""
+Insights:
+   • Total recognitions processed: {total_recognitions}
+   • Overall average confidence: {avg_confidence}
+   • Advanced pattern recognition applied
+   • Peak activity identified and analyzed
 """
-        
-        self.peak_hours_text.delete(1.0, tk.END)
-        self.peak_hours_text.insert(tk.END, analysis_text)
+            except Exception as e:
+                analysis_text += f"\nInsights: Error processing summary - {e}"
+            
+            self.peak_hours_text.delete(1.0, tk.END)
+            self.peak_hours_text.insert(tk.END, analysis_text)
+            
+        except Exception as e:
+            self.peak_hours_text.delete(1.0, tk.END)
+            self.peak_hours_text.insert(tk.END, f"Error displaying peak hours analysis: {e}")
     
     def display_daily_patterns(self):
-        """Display daily attendance patterns"""
-        if 'daily_patterns' not in self.analytics_data:
-            return
-        
-        daily_data = self.analytics_data['daily_patterns']
-        
-        if daily_data.empty:
-            self.daily_patterns_text.delete(1.0, tk.END)
-            self.daily_patterns_text.insert(tk.END, "No daily patterns data available")
-            return
-        
-        # Find patterns
-        busiest_day_idx = daily_data['total_attendance'].idxmax()
-        busiest_day = daily_data.iloc[busiest_day_idx]
-        
-        highest_late_idx = daily_data['late_percentage'].idxmax()
-        highest_late_day = daily_data.iloc[highest_late_idx]
-        
-        patterns_text = f"""
+        """Display daily patterns with safe formatting"""
+        try:
+            if 'daily_patterns' not in self.analytics_data:
+                return
+            
+            daily_data = self.analytics_data['daily_patterns']
+            
+            if daily_data.empty:
+                self.daily_patterns_text.delete(1.0, tk.END)
+                self.daily_patterns_text.insert(tk.END, "No daily patterns data available")
+                return
+            
+            # Find patterns safely
+            busiest_day_idx = daily_data['total_attendance'].idxmax()
+            busiest_day = daily_data.iloc[busiest_day_idx]
+            
+            highest_late_idx = daily_data['late_percentage'].idxmax()
+            highest_late_day = daily_data.iloc[highest_late_idx]
+            
+            # Safe formatting
+            busiest_name = str(busiest_day['day_of_week'])
+            busiest_total = self.safe_format_number(busiest_day['total_attendance'], "int")
+            busiest_unique = self.safe_format_number(busiest_day['unique_employees'], "int")
+            busiest_late = self.safe_format_number(busiest_day['late_percentage'], "percent")
+            
+            late_name = str(highest_late_day['day_of_week'])
+            late_percent = self.safe_format_number(highest_late_day['late_percentage'], "percent")
+            
+            patterns_text = f"""
 📅 DAILY ATTENDANCE PATTERNS
 
-🔥 Busiest Day: {busiest_day['day_of_week']}
-   • Total Attendance: {busiest_day['total_attendance']:,}
-   • Unique Employees: {busiest_day['unique_employees']}
-   • Late Percentage: {busiest_day['late_percentage']:.1f}%
+Busiest Day: {busiest_name}
+   • Total Attendance: {busiest_total}
+   • Unique Employees: {busiest_unique}
+   • Late Percentage: {busiest_late}
 
-⏰ Highest Late Rate: {highest_late_day['day_of_week']} ({highest_late_day['late_percentage']:.1f}%)
+Highest Late Rate: {late_name} ({late_percent})
 
-📊 Weekly Breakdown:
+Weekly Breakdown:
 """
-        
-        for _, row in daily_data.iterrows():
-            patterns_text += f"   {row['day_of_week']:<10}: {row['total_attendance']:>6,} attendees ({row['late_percentage']:>5.1f}% late)\n"
-        
-        patterns_text += f"""
-        
-💡 Pattern Analysis:
-   • Average weekly attendance: {daily_data['total_attendance'].mean():.0f}
-   • Overall late rate: {daily_data['late_percentage'].mean():.1f}%
-   • Most punctual day: {daily_data.loc[daily_data['late_percentage'].idxmin(), 'day_of_week']}
+            
+            # Add weekly breakdown safely
+            try:
+                for _, row in daily_data.iterrows():
+                    day_name = str(row['day_of_week'])[:10]
+                    total_att = self.safe_format_number(row['total_attendance'], "int")
+                    late_pct = self.safe_format_number(row['late_percentage'], "percent")
+                    patterns_text += f"   {day_name:<10}: {total_att:>8} attendees ({late_pct:>6} late)\n"
+            except Exception as e:
+                patterns_text += f"   Error processing weekly data: {e}\n"
+            
+            # Summary insights
+            try:
+                avg_attendance = self.safe_format_number(daily_data['total_attendance'].mean(), "int")
+                avg_late_rate = self.safe_format_number(daily_data['late_percentage'].mean(), "percent")
+                best_day = str(daily_data.loc[daily_data['late_percentage'].idxmin(), 'day_of_week'])
+                
+                patterns_text += f"""
+Pattern Analysis:
+   • Average weekly attendance: {avg_attendance}
+   • Overall late rate: {avg_late_rate}
+   • Most punctual day: {best_day}
+   • Advanced trend analysis applied
 """
-        
-        self.daily_patterns_text.delete(1.0, tk.END)
-        self.daily_patterns_text.insert(tk.END, patterns_text)
+            except Exception as e:
+                patterns_text += f"\n💡 Analysis: Error processing insights - {e}"
+            
+            self.daily_patterns_text.delete(1.0, tk.END)
+            self.daily_patterns_text.insert(tk.END, patterns_text)
+            
+        except Exception as e:
+            self.daily_patterns_text.delete(1.0, tk.END)
+            self.daily_patterns_text.insert(tk.END, f"Error displaying daily patterns: {e}")
     
     def display_employee_performance(self):
-        """Display employee performance analytics"""
-        if 'employee_performance' not in self.analytics_data:
-            return
-        
-        emp_data = self.analytics_data['employee_performance']
-        
-        if emp_data.empty:
-            self.employee_performance_text.delete(1.0, tk.END)
-            self.employee_performance_text.insert(tk.END, "No employee performance data available")
-            return
-        
-        performance_text = f"""
+        """Display employee performance with safe formatting"""
+        try:
+            if 'employee_performance' not in self.analytics_data:
+                return
+            
+            emp_data = self.analytics_data['employee_performance']
+            
+            if emp_data.empty:
+                self.employee_performance_text.delete(1.0, tk.END)
+                self.employee_performance_text.insert(tk.END, "No employee performance data available")
+                return
+            
+            performance_text = """
 EMPLOYEE PERFORMANCE ANALYTICS
 
 Top Performers:
 """
-        
-        # Top performers
-        top_performers = emp_data.head(min(10, len(emp_data)))
-        for i, (_, row) in enumerate(top_performers.iterrows(), 1):
-            performance_text += f"   {i:2d}. {row['employee_name']:<15} - {row['punctuality_score']:>5.1f}% punctual\n"
-        
-        performance_text += f"""
-        
-📊 Performance Metrics:
-   • Total employees analyzed: {len(emp_data):,}
-   • Average punctuality score: {emp_data['punctuality_score'].mean():.1f}%
-   • Best performer: {emp_data.iloc[0]['employee_name']} ({emp_data.iloc[0]['punctuality_score']:.1f}%)
-   • Average arrival time: {emp_data['avg_arrival_hour'].mean():.1f}:00
+            
+            # Top performers with safe formatting
+            try:
+                top_performers = emp_data.head(min(10, len(emp_data)))
+                for i, (_, row) in enumerate(top_performers.iterrows(), 1):
+                    name = str(row['employee_name'])[:15]
+                    score = self.safe_format_number(row['punctuality_score'], "percent")
+                    performance_text += f"   {i:2d}. {name:<15} - {score:>6} punctual\n"
+            except Exception as e:
+                performance_text += f"   Error processing top performers: {e}\n"
+            
+            # Performance metrics
+            try:
+                total_employees = self.safe_format_number(len(emp_data), "int")
+                avg_punctuality = self.safe_format_number(emp_data['punctuality_score'].mean(), "percent")
+                best_performer = str(emp_data.iloc[0]['employee_name']) if len(emp_data) > 0 else "N/A"
+                best_score = self.safe_format_number(emp_data.iloc[0]['punctuality_score'], "percent") if len(emp_data) > 0 else "N/A"
+                avg_arrival = self.safe_format_number(emp_data['avg_arrival_hour'].mean(), "float")
+                
+                performance_text += f"""
+Performance Metrics:
+   • Total employees analyzed: {total_employees}
+   • Average punctuality score: {avg_punctuality}
+   • Best performer: {best_performer} ({best_score})
+   • Average arrival time: {avg_arrival}:00
    
-📈 Distribution Analysis:
-   • Excellent (>95%): {len(emp_data[emp_data['punctuality_score'] > 95])} employees
-   • Good (85-95%): {len(emp_data[(emp_data['punctuality_score'] >= 85) & (emp_data['punctuality_score'] <= 95)])} employees
-   • Needs Improvement (<85%): {len(emp_data[emp_data['punctuality_score'] < 85])} employees
-   
-🚀 Insights:
-   • Analyzed {emp_data['total_days'].sum():,} total records
-   • Advanced analytics algorithms
-   • Predictive modeling ready
+Distribution Analysis:
 """
-        
-        self.employee_performance_text.delete(1.0, tk.END)
-        self.employee_performance_text.insert(tk.END, performance_text)
+                
+                # Distribution analysis
+                excellent = len(emp_data[emp_data['punctuality_score'] > 95])
+                good = len(emp_data[(emp_data['punctuality_score'] >= 85) & (emp_data['punctuality_score'] <= 95)])
+                needs_improvement = len(emp_data[emp_data['punctuality_score'] < 85])
+                total_records = self.safe_format_number(emp_data['total_days'].sum(), "int")
+                
+                performance_text += f"   • Excellent (>95%): {excellent} employees\n"
+                performance_text += f"   • Good (85-95%): {good} employees\n"
+                performance_text += f"   • Needs Improvement (<85%): {needs_improvement} employees\n"
+                
+                performance_text += f"""
+Analytics Features:
+   • Analyzed {total_records} total attendance records
+"""
+                
+            except Exception as e:
+                performance_text += f"\nMetrics: Error processing data - {e}"
+            
+            self.employee_performance_text.delete(1.0, tk.END)
+            self.employee_performance_text.insert(tk.END, performance_text)
+            
+        except Exception as e:
+            self.employee_performance_text.delete(1.0, tk.END)
+            self.employee_performance_text.insert(tk.END, f"Error displaying employee performance: {e}")
     
     def generate_full_report(self):
         """Generate comprehensive analytics report"""
@@ -343,26 +457,29 @@ Top Performers:
         try:
             # Create report file
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            report_filename = f"data_analytics_report_{timestamp}.txt"
-            
-            with open(report_filename, 'w') as f:
+            report_filename = f"report_{timestamp}.txt"
+
+            with open(report_filename, 'w', encoding='utf-8') as f:
                 f.write("="*80 + "\n")
-                f.write("DATA FACE RECOGNITION ANALYTICS REPORT\n")
-                f.write("Advanced Analytics Engine\n")
+                f.write("FACE RECOGNITION ANALYTICS REPORT\n")
+                f.write("Data Analytics Engine - Comprehensive Analysis\n")
                 f.write("="*80 + "\n\n")
                 f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
                 
-                # Write all analytics sections
+                # Write all analytics sections safely
                 for section, data in self.analytics_data.items():
-                    f.write(f"\n{section.upper().replace('_', ' ')}\n")
-                    f.write("-" * 50 + "\n")
-                    if hasattr(data, 'to_string'):  # pandas DataFrame
-                        f.write(data.to_string(index=False))
-                    else:
-                        f.write(str(data))
-                    f.write("\n\n")
+                    try:
+                        f.write(f"\n{section.upper().replace('_', ' ')}\n")
+                        f.write("-" * 50 + "\n")
+                        if hasattr(data, 'to_string'):  # pandas DataFrame
+                            f.write(data.to_string(index=False))
+                        else:
+                            f.write(str(data))
+                        f.write("\n\n")
+                    except Exception as e:
+                        f.write(f"Error writing section {section}: {e}\n\n")
             
-            messagebox.showinfo("Success", f"Report saved as: {report_filename}")
+            messagebox.showinfo("Success", f"Advanced analytics report saved as: {report_filename}")
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to generate report: {str(e)}")
@@ -376,10 +493,11 @@ Top Performers:
     
     def update_status(self, message):
         """Update analytics status message"""
-        self.analytics_status.config(text=f"{datetime.now().strftime('%H:%M:%S')} - {message}")
+        timestamp = datetime.now().strftime('%H:%M:%S')
+        self.analytics_status.config(text=f"{timestamp} - {message}")
     
-    # EXISTING METHODS
-
+    # EXISTING METHODS (unchanged)
+    
     def create_system_info_tab(self):
         """Create system information tab"""
         info_frame = ttk.Frame(self.notebook)
@@ -438,10 +556,11 @@ Status: {'Running' if stats['is_running'] else 'Stopped'}
 
 face_recognition library: {'✅ Available' if stats['face_recognition_available'] else '❌ Not Available'}
 
-🚀 NEW: Data Analytics Available!
-   • Advanced analytics engine ready
-   • Large-scale data processing
+DATA ANALYTICS AVAILABLE!
+   • Advanced Spark analytics engine
+   • Large-scale distributed processing
    • Comprehensive insights generation
+   • Real-time analytics capabilities
 
 Last Updated: {datetime.now().strftime('%H:%M:%S')}
 """

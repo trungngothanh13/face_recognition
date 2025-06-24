@@ -4,19 +4,51 @@ Face recognition attendance system with motion detection and MongoDB integration
 
 ## 🔧 System Requirements
 
-- **Python 3.8+**
+- **Python 3.11** (REQUIRED for Spark compatibility)
+- **Java JDK 11** and **Apache Hadoop 3.0+** (for Apache Spark)
 - **MongoDB** (local or remote)
 - **Webcam** or video input device
 - **Windows 10/11** (recommended for easier dlib installation)
 
 ## 📦 Installation Steps
 
-### 1. Install MongoDB
+### 1. Install Java JDK 11
+1. Download **OpenJDK 11** from [Microsoft OpenJDK](https://docs.microsoft.com/en-us/java/openjdk/download#openjdk-11)
+2. Install to default location: `C:\Program Files\Java\jdk-11`
+3. Add to system PATH and set `JAVA_HOME` environment variable
+
+### 2. Install Apache Hadoop
+1. Download **Hadoop 3.0.0** from [Apache Hadoop](https://hadoop.apache.org/releases.html)
+2. Extract to: `C:\hadoop-3.0.0`
+3. Download `winutils.exe` from [WinUtils Repository](https://github.com/steveloughran/winutils)
+4. Copy `winutils.exe` to: `C:\hadoop-3.0.0\bin\winutils.exe`
+5. Add Hadoop to system PATH and set `HADOOP_HOME` environment variable
+
+### 3. Environment Variables Setup
+
+Add these environment variables to your system:
+
+```bash
+# Java
+JAVA_HOME=C:\Program Files\Java\jdk-11
+
+# Hadoop
+HADOOP_HOME=C:\hadoop-3.0.0
+
+# Spark Python Configuration
+PYSPARK_PYTHON=[path_to_your_python.exe]
+PYSPARK_DRIVER_PYTHON=[path_to_your_python.exe]
+
+# Add to PATH
+PATH=%PATH%;%JAVA_HOME%\bin;%HADOOP_HOME%\bin
+```
+
+### 4. Install MongoDB
 1. Download from [MongoDB Download Center](https://www.mongodb.com/try/download/community)
 2. Install with default settings
 3. MongoDB will run on `localhost:27017` by default
 
-### 2. Install Python Dependencies
+### 5. Install Python Dependencies
 
 ```bash
 # Create virtual environment (recommended)
@@ -36,7 +68,7 @@ pip install cmake
 pip install dlib
 ```
 
-### 3. Setup for dlib
+### 6. Setup for dlib
 
 If `pip install face-recognition` fails:
 
@@ -51,10 +83,20 @@ If `pip install face-recognition` fails:
    pip install face-recognition
    ```
 
-### 4. Verify Installation
+### 7. Verify Installations
 
 ```bash
+# Test libraries
 python -c "import cv2, face_recognition, pymongo; print('All dependencies installed')"
+
+# Test Java
+java -version
+
+# Test Hadoop
+hadoop version
+
+# Test Spark
+python -c "import pyspark; print('Spark version:', pyspark.__version__)"
 ```
 
 ## 🚀 Quick Start
@@ -77,6 +119,7 @@ python face_recognition_app_refactored.py
 1. **Add Employees**: Click "Add Employee" to register people
 2. **Enroll Faces**: Select employee and click "Enroll Face" to capture face samples
 3. **Start Recognition**: Click "Start Recognition" to begin automatic attendance
+4. **Data Analytics**: Navigate to "Data Analytics" tab and click "Run Analytics"
 
 ## 📋 Features
 
@@ -86,6 +129,7 @@ python face_recognition_app_refactored.py
 - **Attendance Tracking** (automatic and manual)
 - **Real-time Video Processing** (800x600 display)
 - **MongoDB Integration** (persistent data storage)
+- **Scalable Data Analytics** (designed for large datasets)
 
 ## Troubleshooting
 
@@ -105,14 +149,20 @@ Error: Database connection failed
 - Ensure MongoDB is running: `mongod --version`
 - Check connection string in `config/system_config.json`
 
-**3. face_recognition library not found**
+**3. Hadoop/WinUtils Error**
+```HADOOP_HOME and hadoop.home.dir are unset```
+- Download and install winutils.exe in Hadoop bin directory
+- Set HADOOP_HOME environment variable
+- Add Hadoop bin to PATH
+
+**4. face_recognition library not found**
 ```
 face_recognition library not available
 ```
 - System will work in "detection only" mode
 - Install face_recognition: `pip install face-recognition`
 
-**4. Poor face recognition**
+**5. Poor face recognition**
 - Ensure good lighting during enrollment
 - Capture multiple samples (5 recommended)
 - Keep face centered and clearly visible
@@ -158,38 +208,42 @@ face_recognition/
 ├── .gitignore
 │
 ├── config/
-│   └── system_config.json
+│   └── system_config.json                  # System configuration
 │
 ├── src/
 │   ├── __init__.py
 │   │
-│   ├── database/                          # Database layer
+│   ├── analytics/                          # Big Data Analytics
 │   │   ├── __init__.py
-│   │   ├── employee_database.py           # Employee operations
-│   │   ├── face_database.py               # Face data operations
-│   │   └── database_manager.py            # Database connection manager
+│   │   └── spark_analytics.py              # Spark distributed processing
 │   │
-│   ├── processing/                        # Core processing logic
+│   ├── database/                           # Database layer
 │   │   ├── __init__.py
-│   │   ├── video_stream.py                # Video capture
-│   │   ├── motion_detector.py             # Motion detection
-│   │   ├── face_processor.py              # Face detection/recognition
-│   │   ├── face_enrollment.py             # Face enrollment logic
-│   │   └── integrated_system.py           # System integration
+│   │   ├── employee_database.py            # Employee operations
+│   │   ├── face_database.py                # Face data operations
+│   │   └── database_manager.py             # Database connection manager
 │   │
-│   ├── ui/                                # User Interface components
+│   ├── processing/                         # Core processing logic
 │   │   ├── __init__.py
-│   │   ├── main_window.py                 # Main application window
-│   │   ├── video_panel.py                 # Video display panel
-│   │   ├── info_tabs.py                   # Information tabs
-│   │   ├── dialogs.py                     # Dialog windows
-│   │   └── components.py                  # Reusable UI components
+│   │   ├── video_stream.py                 # Video capture
+│   │   ├── motion_detector.py              # Motion detection
+│   │   ├── face_processor.py               # Face detection/recognition
+│   │   ├── face_enrollment.py              # Face enrollment logic
+│   │   └── integrated_system.py            # System integration
 │   │
-│   └── utils/                             # Utilities
+│   ├── ui/                                 # User Interface components
+│   │   ├── __init__.py
+│   │   ├── main_window.py                  # Main application window
+│   │   ├── video_panel.py                  # Video display panel
+│   │   ├── info_tabs.py                    # Information tabs (including analytics)
+│   │   ├── dialogs.py                      # Dialog windows
+│   │   └── components.py                   # Reusable UI components
+│   │
+│   └── utils/                              # Utilities
 │       ├── __init__.py
-│       └── config_loader.py               # Configuration loading
+│       └── config_loader.py                # Configuration loading
 │
-└── test_notebooks/                        # Jupyter notebooks for testing the modules
+└── test_notebooks/                         # Jupyter notebooks for testing
     ├── 2_face_enrollment.ipynb
     └── 3_integrated_system.ipynb
 ```
@@ -197,13 +251,17 @@ face_recognition/
 ## System Architecture
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Camera Input  │ →  │ Motion Detection │ →  │ Face Recognition│
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                 ↓
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   UI Display    │ ←  │ Main Application │ →  │ MongoDB Storage │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
+┌─────────────────┐        ┌──────────────────┐    ┌─────────────────┐
+│   Camera Input  │     →  │ Motion Detection │ →  │ Face Recognition│
+└─────────────────┘        └──────────────────┘    └─────────────────┘
+                                     ↓
+┌─────────────────┐        ┌──────────────────┐    ┌─────────────────┐
+│   UI Display    │     ←  │ Main Application │ →  │ MongoDB Storage │
+└─────────────────┘        └──────────────────┘    └─────────────────┘
+                                     ↓
+┌─────────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ Analytics Dashboard │ ←  │   Apache Spark   │ →  │ Hadoop Ecosystem│
+└─────────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
 ## Database Collections
