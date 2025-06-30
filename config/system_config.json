@@ -1,55 +1,55 @@
-{
-    "video": {
-        "source": 0,
-        "frame_width": 640,
-        "frame_height": 480,
-        "fps": 30
-    },
-    "motion_detection": {
-        "enabled": true,
-        "threshold": 25,
-        "min_area": 500
-    },
-    "face_detection": {
-        "enabled": true,
-        "detection_model": "combined",
-        "min_confidence": 0.5,
-        "min_face_size": 80,
-        "max_face_size": 400,
-        "min_quality_score": 0.3,
-        "use_tracking": true,
-        "available_models": ["opencv", "dlib", "combined"],
-        "quality_thresholds": {
-            "high_quality": 0.7,
-            "medium_quality": 0.5,
-            "low_quality": 0.3
-        }
-    },
-    "face_recognition": {
-        "enabled": true,
-        "model": "hog",
-        "recognition_threshold": 0.6,
-        "unknown_face_threshold": 0.7,
-        "max_distance": 0.6,
-        "num_jitters": 1,
-        "model_complexity": 1
-    },
-    "database": {
-        "mongodb_uri": "mongodb://localhost:27017/",
-        "database_name": "face_recognition_db",
-        "face_collection": "faces",
-        "event_collection": "recognition_events"
-    },
-    "performance": {
-        "frame_skip": 1,
-        "detection_interval": 3,
-        "tracking_timeout": 10,
-        "max_faces_per_frame": 5
-    },
-    "logging": {
-        "level": "INFO",
-        "log_file": "logs/face_recognition.log",
-        "max_file_size": "10MB",
-        "backup_count": 5
-    }
-}
+// {
+//     "video": {
+//         "source": 0,
+//         "frame_width": 640,
+//         "frame_height": 480,
+//         "fps": 30
+//     },
+//     "motion_detection": {
+//         "enabled": true,
+//         "threshold": 25,
+//         "min_area": 500
+//     },
+//     "face_detection": {
+//         "enabled": true,
+//         "detection_model": "combined",
+//         "min_confidence": 0.5,
+//         "min_face_size": 80,
+//         "max_face_size": 400,
+//         "min_quality_score": 0.3,
+//         "use_tracking": true,
+//         "available_models": ["opencv", "dlib", "combined"],
+//         "quality_thresholds": {
+//             "high_quality": 0.7,
+//             "medium_quality": 0.5,
+//             "low_quality": 0.3
+//         }
+//     },
+//     "face_recognition": {
+//         "enabled": true,
+//         "model": "hog",
+//         "recognition_threshold": 0.7,
+//         "unknown_face_threshold": 0.7,
+//         "max_distance": 0.6,
+//         "num_jitters": 1,
+//         "model_complexity": 1
+//     },
+//     "database": {
+//         "mongodb_uri": "mongodb://localhost:27017/",
+//         "database_name": "face_recognition_db",
+//         "face_collection": "faces",
+//         "event_collection": "recognition_events"
+//     },
+//     "performance": {
+//         "frame_skip": 1,
+//         "detection_interval": 3,
+//         "tracking_timeout": 10,
+//         "max_faces_per_frame": 5
+//     },
+//     "logging": {
+//         "level": "INFO",
+//         "log_file": "logs/face_recognition.log",
+//         "max_file_size": "10MB",
+//         "backup_count": 5
+//     }
+// }

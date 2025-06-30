@@ -396,32 +396,37 @@ class SparkAnalyticsEngine:
             return pd.DataFrame()
     
     def real_time_analytics_simulation(self):
-        """Real-time analytics"""
+        """Real-time analytics with date column and sorted by date"""
         print("⚡ Running real-time analytics...")
-        
+
         if self.events_df.empty:
             return pd.DataFrame()
-        
+
         try:
             recent_cutoff = datetime.now() - timedelta(days=7)
             recent_events = self.events_df[self.events_df['timestamp'] >= recent_cutoff]
-            
+
             if recent_events.empty:
                 recent_events = self.events_df.tail(100)
-            
-            realtime_stats = recent_events.groupby(['name', 'day_of_week']).agg({
+
+            # Add a 'date' column (date only, not datetime)
+            recent_events = recent_events.copy()
+            recent_events['date'] = recent_events['timestamp'].dt.date
+
+            realtime_stats = recent_events.groupby(['date', 'name', 'day_of_week']).agg({
                 'name': 'count',
                 'confidence': 'mean'
             }).round(3)
-            
+
             realtime_stats.columns = ['recognition_frequency', 'avg_confidence']
-            
+
             # Fix data types
             realtime_stats['recognition_frequency'] = realtime_stats['recognition_frequency'].astype(int)
             realtime_stats['avg_confidence'] = realtime_stats['avg_confidence'].astype(float).round(3)
-            
-            return realtime_stats.sort_values('recognition_frequency', ascending=False).reset_index()
-            
+
+            # Sort by date (ascending)
+            return realtime_stats.sort_values('date', ascending=True).reset_index()
+
         except Exception as e:
             print(f"Error in real-time analytics: {e}")
             return pd.DataFrame()

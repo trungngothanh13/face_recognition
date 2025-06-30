@@ -28,15 +28,7 @@ except ImportError:
 def main():
     """Main application entry point"""
     print("🚀 Starting Face Recognition Desktop Application...")
-    print("📋 Features:")
     print(f"   - Face Recognition: {'✅ Available' if FACE_RECOGNITION_AVAILABLE else '❌ Detection Only'}")
-    print("   - Larger camera display (800x600)")
-    print("   - Automatic attendance recording")
-    print("   - Motion detection + face recognition")
-    print("   - Employee management")
-    print("   - Manual attendance option")
-    print("   - Modular architecture with separated components")
-    
     if FACE_RECOGNITION_AVAILABLE:
         print("\n🎯 This version will automatically recognize faces and record attendance!")
     else:
@@ -59,13 +51,6 @@ def main():
         
         # Start the application
         print("\n✅ Application initialized successfully!")
-        print("🎮 GUI Controls:")
-        print("   - Start Recognition: Begin face detection/recognition")
-        print("   - Stop Recognition: Stop camera processing")
-        print("   - Manual Attendance: Record attendance manually")
-        print("   - Add Employee: Add new employee to system")
-        print("   - Enroll Face: Capture face samples for employee")
-        print("   - Link Face: Connect existing face data to employee")
         
         root.mainloop()
         

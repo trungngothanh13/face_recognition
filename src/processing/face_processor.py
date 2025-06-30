@@ -30,6 +30,26 @@ class ImprovedFaceProcessor:
         except ImportError:
             return False
     
+    def recognize_faces(self, frame, known_encodings, known_names, threshold=0.6):
+        """Recognize faces in frame"""
+        face_locations, face_encodings = self.detect_and_encode_faces(frame)
+        
+        processed_frame = frame.copy()
+        recognition_results = []
+        
+        if self.use_face_recognition and known_encodings:
+            # Use face_recognition for actual recognition
+            recognition_results = self._process_recognition(
+                face_locations, face_encodings, known_encodings, known_names, threshold
+            )
+            self._draw_recognition_results(processed_frame, recognition_results)
+        else:
+            # OpenCV detection only - no recognition
+            recognition_results = self._process_detection_only(face_locations)
+            self._draw_detection_results(processed_frame, face_locations)
+        
+        return processed_frame, recognition_results
+    
     def detect_and_encode_faces(self, frame):
         """Detect faces and generate encodings (if face_recognition available)"""
         if self.use_face_recognition:
@@ -62,26 +82,6 @@ class ImprovedFaceProcessor:
         
         return face_locations, []  # No encodings available
     
-    def recognize_faces(self, frame, known_encodings, known_names, threshold=0.6):
-        """Recognize faces in frame"""
-        face_locations, face_encodings = self.detect_and_encode_faces(frame)
-        
-        processed_frame = frame.copy()
-        recognition_results = []
-        
-        if self.use_face_recognition and known_encodings:
-            # Use face_recognition for actual recognition
-            recognition_results = self._process_recognition(
-                face_locations, face_encodings, known_encodings, known_names, threshold
-            )
-            self._draw_recognition_results(processed_frame, recognition_results)
-        else:
-            # OpenCV detection only - no recognition
-            recognition_results = self._process_detection_only(face_locations)
-            self._draw_detection_results(processed_frame, face_locations)
-        
-        return processed_frame, recognition_results
-    
     def _process_recognition(self, face_locations, face_encodings, known_encodings, known_names, threshold):
         """Process face recognition results"""
         import face_recognition
@@ -105,15 +105,6 @@ class ImprovedFaceProcessor:
         
         return recognition_results
     
-    def _process_detection_only(self, face_locations):
-        """Process detection-only results"""
-        recognition_results = []
-        
-        for (top, right, bottom, left) in face_locations:
-            recognition_results.append(("Unknown", 0.0, (top, right, bottom, left)))
-        
-        return recognition_results
-    
     def _draw_recognition_results(self, frame, recognition_results):
         """Draw recognition results on frame"""
         for name, confidence, (top, right, bottom, left) in recognition_results:
@@ -127,6 +118,15 @@ class ImprovedFaceProcessor:
             label = f"{name} ({confidence:.2f})" if name != "Unknown" else "Unknown"
             cv2.putText(frame, label, (left, top-10), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+    
+    def _process_detection_only(self, face_locations):
+        """Process detection-only results"""
+        recognition_results = []
+        
+        for (top, right, bottom, left) in face_locations:
+            recognition_results.append(("Unknown", 0.0, (top, right, bottom, left)))
+        
+        return recognition_results
     
     def _draw_detection_results(self, frame, face_locations):
         """Draw detection-only results on frame"""

@@ -142,8 +142,7 @@ def show_face_enrollment_dialog(parent, employee, face_db, reload_callback):
                        "- Look directly at the camera\n"
                        "- Keep your face well-lit\n"
                        "- Move slightly between samples\n"
-                       "- Press 'q' to quit early\n\n"
-                       "The enrollment window will open shortly...")
+                       "- Press 'q' to quit early\n\n")
     
     # Run enrollment in separate thread
     threading.Thread(

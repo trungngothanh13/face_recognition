@@ -40,6 +40,7 @@ class MainWindow:
         # System state
         self.is_running = False
         self.video_thread = None
+        self.camera_available = False
         
         # Load known faces
         self.load_known_faces()
@@ -90,7 +91,7 @@ class MainWindow:
                     self.employee_map[face_name] = employee['employee_id']
             
             print(f"✅ Loaded {len(self.known_encodings)} face encodings")
-            print(f"✅ Mapped {len(self.employee_map)} faces to employees")
+            print(f"✅ Mapped {len(self.employee_map)} faces to employees") 
             
         except Exception as e:
             print(f"❌ Error loading faces: {e}")
@@ -106,6 +107,7 @@ class MainWindow:
         try:
             # Initialize video processing
             self.video_panel.start_video_processing()
+            self.camera_available = True
             
             # Update state
             self.is_running = True
@@ -121,10 +123,12 @@ class MainWindow:
         except Exception as e:
             messagebox.showerror("Error", f"Failed to start recognition: {e}")
             self.is_running = False
+            self.camera_available = False
     
     def stop_recognition(self):
         """Stop the face recognition system"""
         self.is_running = False
+        self.camera_available = False
         
         # Stop video processing
         self.video_panel.stop_video_processing()
@@ -133,11 +137,18 @@ class MainWindow:
         self.update_status_bar("Face recognition stopped")
     
     def video_processing_loop(self):
-        """Main video processing loop"""
+        """Main video processing loop with improved error handling"""
+        consecutive_errors = 0
+        max_consecutive_errors = 10
+        
         while self.is_running:
             try:
+                # Check if camera is available
+                if not self.camera_available or not self.video_panel.video_stream:
+                    print("❌ Camera not available, stopping video processing")
+                    break
+                
                 # Let video panel handle the actual processing
-                # This allows the video panel to manage its own video stream
                 recognition_results = self.video_panel.process_frame(
                     self.known_encodings, 
                     self.known_names, 
@@ -147,15 +158,40 @@ class MainWindow:
                 # Process any recognition results
                 if recognition_results:
                     for name, confidence, location in recognition_results:
-                        if name != "Unknown" and confidence > 0.6:
+                        # Only process attendance for known faces
+                        if name != "Unknown" and confidence > 0.8:
                             if self.should_record_attendance(name):
                                 self.process_recognition(name, confidence)
+                                
+                        # Record recognition event, also unknown faces for confusion matrix
+                        if confidence > 0.8:        
+                            self.record_recognition_event(name, confidence, location)
+                        elif name == "Unknown":
+                            time.sleep(0.5)  # Brief pause for unknown faces
+                            self.record_recognition_event(name, confidence, location)
+
                 
+                # Reset error counter on successful processing
+                consecutive_errors = 0
                 time.sleep(0.03)  # ~30 FPS
                 
             except Exception as e:
-                print(f"Video processing error: {e}")
-                break
+                consecutive_errors += 1
+                print(f"Video processing error ({consecutive_errors}/{max_consecutive_errors}): {e}")
+                
+                # If too many consecutive errors, stop processing
+                if consecutive_errors >= max_consecutive_errors:
+                    print("❌ Too many consecutive errors, stopping video processing")
+                    self.root.after(0, lambda: messagebox.showerror(
+                        "Camera Error", 
+                        "Camera connection lost. Please check your camera and restart recognition."
+                    ))
+                    break
+                
+                time.sleep(0.1)  # Brief pause before retry
+        
+        # Clean shutdown
+        self.root.after(0, self.stop_recognition)
     
     def should_record_attendance(self, name):
         """Check if we should record attendance (avoid spam)"""
@@ -188,7 +224,22 @@ class MainWindow:
         except Exception as e:
             print(f"Error processing recognition: {e}")
             self.video_panel.show_recognition_status("❌ Attendance error", "red")
-    
+            
+    def record_recognition_event(self, name, confidence, location):
+        """Record recognition event to database"""
+        try:
+            # Only record if face_recognition is available (since location format might differ)
+            if self.face_processor.use_face_recognition:
+                self.face_db.record_recognition_event(
+                    name=name,
+                    confidence=confidence,
+                    location=location
+                )
+                print(f"📝 Recorded recognition event: {name} (confidence: {confidence:.2f})")
+        except Exception as e:
+            print(f"❌ Error recording recognition event: {e}")
+            # Don't show error to user as this shouldn't interrupt the main flow
+
     def add_employee(self):
         """Add a new employee"""
         dialog = EmployeeDialog(self.root, self.emp_db)
@@ -248,7 +299,8 @@ class MainWindow:
                 'known_faces': len(self.known_encodings),
                 'event_count': event_count,
                 'is_running': self.is_running,
-                'face_recognition_available': self.face_processor.use_face_recognition
+                'face_recognition_available': self.face_processor.use_face_recognition,
+                'camera_available': self.camera_available
             })
             
             # Update attendance

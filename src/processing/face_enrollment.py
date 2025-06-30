@@ -5,17 +5,17 @@ import time
 from datetime import datetime
 import face_recognition
 
-class EnhancedFaceProcessor:
-    """Enhanced face processor using the face_recognition library"""
+class FaceEnrollment:
+    """Handle face enrollment process"""
     
-    def __init__(self):
-        self.known_face_encodings = []
-        self.known_face_names = []
-        
+    def __init__(self, face_database, video_stream_class):
+        self.face_db = face_database
+        self.video_stream_class = video_stream_class
+    
     def detect_and_encode_faces(self, frame):
         """
         Detect faces and generate encodings
-        
+
         Args:
             frame: Video frame (BGR format from OpenCV)
             
@@ -40,60 +40,6 @@ class EnhancedFaceProcessor:
         
         return face_locations, face_encodings, processed_frame
     
-    def recognize_faces(self, frame, known_encodings, known_names, threshold=0.6):
-        """
-        Recognize faces in a frame against known faces
-        
-        Args:
-            frame: Video frame
-            known_encodings: List of known face encodings
-            known_names: List of corresponding names
-            threshold: Recognition threshold
-            
-        Returns:
-            processed_frame: Frame with recognition results
-            recognition_results: List of (name, confidence, location) tuples
-        """
-        face_locations, face_encodings, processed_frame = self.detect_and_encode_faces(frame)
-        recognition_results = []
-        
-        # Process each detected face
-        for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
-            # Compare with known faces
-            matches = face_recognition.compare_faces(known_encodings, face_encoding, tolerance=threshold)
-            distances = face_recognition.face_distance(known_encodings, face_encoding)
-            
-            name = "Unknown"
-            confidence = 0.0
-            
-            if len(distances) > 0:
-                best_match_index = np.argmin(distances)
-                if matches[best_match_index]:
-                    name = known_names[best_match_index]
-                    confidence = 1 - distances[best_match_index]
-            
-            # Draw results
-            color = (0, 255, 0) if name != "Unknown" else (0, 0, 255)
-            cv2.rectangle(processed_frame, (left, top), (right, bottom), color, 2)
-            
-            # Add label with confidence
-            label = f"{name} ({confidence:.2f})" if name != "Unknown" else "Unknown"
-            cv2.putText(processed_frame, label, (left, top-10), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-            
-            recognition_results.append((name, confidence, (top, right, bottom, left)))
-        
-        return processed_frame, recognition_results
-
-
-class FaceEnrollment:
-    """Handle face enrollment process"""
-    
-    def __init__(self, face_database, video_stream_class):
-        self.face_db = face_database
-        self.video_stream_class = video_stream_class
-        self.face_processor = EnhancedFaceProcessor()
-    
     def enroll_person(self, person_name, num_samples=5, sample_delay=2.0):
         """
         Enroll a person's face by capturing multiple samples
@@ -106,15 +52,10 @@ class FaceEnrollment:
         Returns:
             bool: True if enrollment successful, False otherwise
         """
-        print(f"🎯 Starting face enrollment for: {person_name}")
-        print(f"📸 Will capture {num_samples} samples with {sample_delay}s delay between each")
-        print("📋 Instructions:")
-        print("   - Look directly at the camera")
-        print("   - Keep your face well-lit")
-        print("   - Move slightly between samples for variety")
-        print("   - Press 'q' to quit early")
-        print("\n⏰ Starting in 3 seconds...")
-        time.sleep(3)
+        print(f"Starting face enrollment for: {person_name}")
+        print(f"Will capture {num_samples} samples with {sample_delay}s delay between each")
+        print("Press 'q' to quit early")
+        print("\n⏰ Starting...")
         
         # Initialize video stream
         stream = self.video_stream_class(0).start()
@@ -131,7 +72,7 @@ class FaceEnrollment:
                     break
                 
                 # Detect faces and get encodings
-                face_locations, face_encodings, processed_frame = self.face_processor.detect_and_encode_faces(frame)
+                face_locations, face_encodings, processed_frame = self.detect_and_encode_faces(frame)
                 
                 # Add sample counter and instructions to frame
                 cv2.putText(processed_frame, f"Enrolling: {person_name}", (10, 30), 
@@ -194,62 +135,6 @@ class FaceEnrollment:
             print(f"❌ No valid face samples captured for {person_name}")
             return False
     
-    def test_recognition(self, recognition_threshold=0.6):
-        """
-        Test face recognition with enrolled faces
-        
-        Args:
-            recognition_threshold: Minimum confidence for recognition
-        """
-        print("🧪 Testing face recognition...")
-        print("📋 Instructions:")
-        print("   - Look at the camera")
-        print("   - The system will try to recognize you")
-        print("   - Press 'q' to quit")
-        
-        # Load all enrolled faces
-        all_faces = self.face_db.get_all_faces()
-        known_names = [face[0] for face in all_faces]
-        known_encodings = [face[1] for face in all_faces]
-        
-        print(f"📚 Loaded {len(known_names)} face samples from database")
-        
-        # Initialize video stream
-        stream = self.video_stream_class(0).start()
-        time.sleep(1.0)
-        
-        try:
-            while True:
-                ret, frame = stream.read()
-                if not ret:
-                    break
-                
-                # Recognize faces
-                processed_frame, results = self.face_processor.recognize_faces(
-                    frame, known_encodings, known_names, recognition_threshold
-                )
-                
-                # Record recognition events
-                for name, confidence, location in results:
-                    if name != "Unknown" and confidence > recognition_threshold:
-                        self.face_db.record_recognition_event(
-                            name=name,
-                            confidence=confidence,
-                            location=location
-                        )
-                
-                # Show frame
-                cv2.imshow("Face Recognition Test", processed_frame)
-                
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-                    
-        finally:
-            stream.stop()
-            cv2.destroyAllWindows()
-        
-        print("✅ Recognition test completed!")
-    
     def get_enrollment_stats(self):
         """Get enrollment statistics"""
         face_count = self.face_db.faces_collection.count_documents({})
@@ -310,31 +195,6 @@ def quick_enroll(person_name, num_samples=5):
             print(f"   - Recognition events: {stats['recognition_events']}")
         
         return success
-        
-    finally:
-        face_db.close()
-
-
-def quick_test():
-    """Quick recognition test function for notebook use"""
-    from ..database.video_stream import VideoStream
-    from ..database.face_database import FaceDatabase
-    
-    # Create components
-    face_db = FaceDatabase()
-    enrollment = FaceEnrollment(face_db, VideoStream)
-    
-    try:
-        # Run test
-        enrollment.test_recognition()
-        
-        # Show recent events
-        recent_events = face_db.get_recent_events(limit=5)
-        print(f"\n📊 Recent recognition events: {len(recent_events)}")
-        
-        for i, event in enumerate(recent_events, 1):
-            timestamp = event['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
-            print(f"   {i}. {event['name']} (confidence: {event['confidence']:.2f}) at {timestamp}")
         
     finally:
         face_db.close()
