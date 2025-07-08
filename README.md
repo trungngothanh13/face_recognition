@@ -1,8 +1,8 @@
-# Face Recognition System - Installation Guide
+# Face Recognition System
 
 Face recognition attendance system with motion detection and MongoDB integration.
 
-## 🔧 System Requirements
+## System Requirements
 
 - **Python 3.11** (REQUIRED for Spark compatibility)
 - **Java JDK 11** and **Apache Hadoop 3.0+** (for Apache Spark)
@@ -10,7 +10,7 @@ Face recognition attendance system with motion detection and MongoDB integration
 - **Webcam** or video input device
 - **Windows 10/11** (recommended for easier dlib installation)
 
-## 📦 Installation Steps
+## Installation Steps
 
 ### 1. Install Java JDK 11
 1. Download **OpenJDK 11** from [Microsoft OpenJDK](https://docs.microsoft.com/en-us/java/openjdk/download#openjdk-11)
@@ -99,7 +99,7 @@ hadoop version
 python -c "import pyspark; print('Spark version:', pyspark.__version__)"
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Start MongoDB
 MongoDB usually starts automatically after installation, check MongoDB service to be sure
@@ -121,7 +121,7 @@ python face_recognition_app_refactored.py
 3. **Start Recognition**: Click "Start Recognition" to begin automatic attendance
 4. **Data Analytics**: Navigate to "Data Analytics" tab and click "Run Analytics"
 
-## 📋 Features
+## Features
 
 - **Automatic Face Recognition** (with face_recognition library)
 - **Motion Detection** (conserves resources)
